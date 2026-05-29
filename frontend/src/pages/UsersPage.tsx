@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, ToggleLeft, ToggleRight, X } from 'lucide-react'
+import { Pencil, Plus, Search, ToggleLeft, ToggleRight, X } from 'lucide-react'
 import { api } from '../api'
 import type { Role, User } from '../api/types'
 import NewUserModal from '../components/NewUserModal'
+import EditUserModal from '../components/EditUserModal'
 
 const APP_BADGE: Record<string, string> = {
   payguard:   'bg-pink-50 text-pink-700 ring-pink-200',
@@ -27,6 +28,7 @@ export default function UsersPage() {
   const [search, setSearch] = useState('')
   const [showInactive, setShowInactive] = useState(true)
   const [showNew, setShowNew] = useState(false)
+  const [editing, setEditing] = useState<User | null>(null)
 
   const usersQ = useQuery({
     queryKey: ['users', showInactive],
@@ -119,6 +121,7 @@ export default function UsersPage() {
                 onAssign={(roleId) => assignRole.mutate({ userId: u.id, roleId })}
                 onRevoke={(roleId) => revokeRole.mutate({ userId: u.id, roleId })}
                 onToggleActive={() => toggleActive.mutate(u)}
+                onEdit={() => setEditing(u)}
                 disabled={assignRole.isPending || revokeRole.isPending}
               />
             ))}
@@ -144,6 +147,17 @@ export default function UsersPage() {
           }}
         />
       )}
+
+      {editing && (
+        <EditUserModal
+          user={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null)
+            qc.invalidateQueries({ queryKey: ['users'] })
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -155,10 +169,11 @@ interface RowProps {
   onAssign: (roleId: string) => void
   onRevoke: (roleId: string) => void
   onToggleActive: () => void
+  onEdit: () => void
   disabled: boolean
 }
 
-function UserRow({ user, roles, onAssign, onRevoke, onToggleActive, disabled }: RowProps) {
+function UserRow({ user, roles, onAssign, onRevoke, onToggleActive, onEdit, disabled }: RowProps) {
   const userRoleNames = new Set(user.roles)
   const availableToAssign = roles.filter((r) => !userRoleNames.has(r.name))
   const userRoleIds = roles
@@ -243,7 +258,15 @@ function UserRow({ user, roles, onAssign, onRevoke, onToggleActive, disabled }: 
           {user.is_active ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
         </button>
       </td>
-      <td className="px-4 py-3"></td>
+      <td className="px-4 py-3 text-right">
+        <button
+          onClick={onEdit}
+          className="text-slate-500 hover:text-indigo-600 inline-flex items-center gap-1 text-xs"
+          title="Edit user"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+      </td>
     </tr>
   )
 }

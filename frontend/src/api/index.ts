@@ -45,14 +45,65 @@ export const api = {
     return data
   },
 
-  // ── reference ──────────────────────────────────────────────────────────
-  async listApps(): Promise<App[]> {
-    const { data } = await client.get<App[]>('/api/apps')
+  // ── apps ───────────────────────────────────────────────────────────────
+  async listApps(includeInactive = false): Promise<App[]> {
+    const { data } = await client.get<App[]>('/api/apps', {
+      params: { include_inactive: includeInactive },
+    })
     return data
   },
 
+  async createApp(name: string, description: string): Promise<App> {
+    const { data } = await client.post<App>('/api/apps', { name, description })
+    return data
+  },
+
+  async updateApp(
+    id: string,
+    body: { name?: string; description?: string; is_active?: boolean },
+  ): Promise<App> {
+    const { data } = await client.patch<App>(`/api/apps/${id}`, body)
+    return data
+  },
+
+  // ── roles ──────────────────────────────────────────────────────────────
   async listRoles(): Promise<Role[]> {
     const { data } = await client.get<Role[]>('/api/roles')
+    return data
+  },
+
+  async createRole(
+    name: string,
+    description: string,
+    appIds: string[] = [],
+  ): Promise<Role> {
+    const { data } = await client.post<Role>('/api/roles', {
+      name,
+      description,
+      app_ids: appIds,
+    })
+    return data
+  },
+
+  async updateRole(
+    id: string,
+    body: { name?: string; description?: string },
+  ): Promise<Role> {
+    const { data } = await client.patch<Role>(`/api/roles/${id}`, body)
+    return data
+  },
+
+  async grantAppToRole(roleId: string, appId: string): Promise<Role> {
+    const { data } = await client.post<Role>(
+      `/api/roles/${roleId}/apps/${appId}`,
+    )
+    return data
+  },
+
+  async revokeAppFromRole(roleId: string, appId: string): Promise<Role> {
+    const { data } = await client.delete<Role>(
+      `/api/roles/${roleId}/apps/${appId}`,
+    )
     return data
   },
 }

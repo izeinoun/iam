@@ -241,24 +241,28 @@ function UserRow({ user, roles, onAssign, onRevoke, onToggleActive, onEdit, disa
         </div>
       </td>
       <td className="px-4 py-3">
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-col gap-1.5">
           {user.apps.length === 0 ? (
             <span className="text-xs text-slate-400">—</span>
           ) : user.apps.map((a) => {
             const granters = appLineage(a)
             const tooltip = granters.length > 0
-              ? `Granted via ${granters.length === 1 ? granters[0] : granters.join(' + ')} role${granters.length > 1 ? 's' : ''}`
-              : 'No granting role found (data inconsistency?)'
+              ? `Granted via ${granters.join(' + ')}`
+              : 'No granting role found'
             return (
-              <span
-                key={a}
-                title={tooltip}
-                className={`text-[11px] px-2 py-0.5 rounded-full font-medium ring-1 capitalize cursor-help ${
-                  APP_BADGE[a] ?? 'bg-slate-50 text-slate-600 ring-slate-200'
-                }`}
-              >
-                {a}
-              </span>
+              <div key={a} className="group relative inline-flex items-center gap-1.5">
+                <span
+                  className={`text-[11px] px-2 py-0.5 rounded-full font-medium ring-1 capitalize ${
+                    APP_BADGE[a] ?? 'bg-slate-50 text-slate-600 ring-slate-200'
+                  }`}
+                  title={tooltip}
+                >
+                  {a}
+                </span>
+                <span className="text-[10px] text-slate-400 italic truncate max-w-[140px]" title={tooltip}>
+                  via {granters.join(' + ') || '?'}
+                </span>
+              </div>
             )
           })}
         </div>

@@ -180,6 +180,14 @@ function UserRow({ user, roles, onAssign, onRevoke, onToggleActive, onEdit, disa
     .filter((r) => userRoleNames.has(r.name))
     .map((r) => ({ id: r.id, name: r.name }))
 
+  // For each app the user has, find which of their roles grants it.
+  // (If multiple roles grant the same app, list them all so the admin
+  // knows that revoking one role won't necessarily revoke app access.)
+  const appLineage = (appName: string): string[] =>
+    roles
+      .filter((r) => userRoleNames.has(r.name) && r.apps.includes(appName))
+      .map((r) => r.name)
+
   return (
     <tr className={user.is_active ? '' : 'opacity-50'}>
       <td className="px-4 py-3">
@@ -236,16 +244,23 @@ function UserRow({ user, roles, onAssign, onRevoke, onToggleActive, onEdit, disa
         <div className="flex flex-wrap gap-1.5">
           {user.apps.length === 0 ? (
             <span className="text-xs text-slate-400">—</span>
-          ) : user.apps.map((a) => (
-            <span
-              key={a}
-              className={`text-[11px] px-2 py-0.5 rounded-full font-medium ring-1 capitalize ${
-                APP_BADGE[a] ?? 'bg-slate-50 text-slate-600 ring-slate-200'
-              }`}
-            >
-              {a}
-            </span>
-          ))}
+          ) : user.apps.map((a) => {
+            const granters = appLineage(a)
+            const tooltip = granters.length > 0
+              ? `Granted via ${granters.length === 1 ? granters[0] : granters.join(' + ')} role${granters.length > 1 ? 's' : ''}`
+              : 'No granting role found (data inconsistency?)'
+            return (
+              <span
+                key={a}
+                title={tooltip}
+                className={`text-[11px] px-2 py-0.5 rounded-full font-medium ring-1 capitalize cursor-help ${
+                  APP_BADGE[a] ?? 'bg-slate-50 text-slate-600 ring-slate-200'
+                }`}
+              >
+                {a}
+              </span>
+            )
+          })}
         </div>
       </td>
       <td className="px-4 py-3 text-slate-700 capitalize">{user.default_app ?? '—'}</td>

@@ -1,5 +1,16 @@
 import { client } from './client'
-import type { App, Role, User, UserCreate, UserUpdate } from './types'
+import type {
+  App,
+  Connector,
+  ConnectorCreate,
+  ConnectorRunResult,
+  ConnectorRunRow,
+  ConnectorUpdate,
+  Role,
+  User,
+  UserCreate,
+  UserUpdate,
+} from './types'
 
 export const api = {
   // ── users ──────────────────────────────────────────────────────────────
@@ -103,6 +114,60 @@ export const api = {
   async revokeAppFromRole(roleId: string, appId: string): Promise<Role> {
     const { data } = await client.delete<Role>(
       `/api/roles/${roleId}/apps/${appId}`,
+    )
+    return data
+  },
+
+  // ── connectors ─────────────────────────────────────────────────────────
+  async listConnectors(opts: { kind?: string; includeInactive?: boolean } = {}): Promise<Connector[]> {
+    const { data } = await client.get<Connector[]>('/api/connectors', {
+      params: {
+        kind: opts.kind,
+        include_inactive: opts.includeInactive ?? true,
+      },
+    })
+    return data
+  },
+
+  async getConnector(id: string): Promise<Connector> {
+    const { data } = await client.get<Connector>(`/api/connectors/${id}`)
+    return data
+  },
+
+  async createConnector(body: ConnectorCreate): Promise<Connector> {
+    const { data } = await client.post<Connector>('/api/connectors', body)
+    return data
+  },
+
+  async updateConnector(id: string, body: ConnectorUpdate): Promise<Connector> {
+    const { data } = await client.patch<Connector>(`/api/connectors/${id}`, body)
+    return data
+  },
+
+  async deleteConnector(id: string): Promise<void> {
+    await client.delete(`/api/connectors/${id}`)
+  },
+
+  async testConnector(id: string, input: Record<string, any> = {}): Promise<ConnectorRunResult> {
+    const { data } = await client.post<ConnectorRunResult>(
+      `/api/connectors/${id}/test`,
+      { input },
+    )
+    return data
+  },
+
+  async runConnector(id: string, input: Record<string, any> = {}): Promise<ConnectorRunResult> {
+    const { data } = await client.post<ConnectorRunResult>(
+      `/api/connectors/${id}/run`,
+      { input },
+    )
+    return data
+  },
+
+  async listConnectorRuns(id: string, limit = 50): Promise<ConnectorRunRow[]> {
+    const { data } = await client.get<ConnectorRunRow[]>(
+      `/api/connectors/${id}/runs`,
+      { params: { limit } },
     )
     return data
   },

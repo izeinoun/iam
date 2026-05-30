@@ -50,3 +50,73 @@ export interface UserUpdate {
   is_active?: boolean
   default_app_id?: string | null
 }
+
+
+// ── Connectors ─────────────────────────────────────────────────────────────
+
+export type ConnectorKind = 'http' | 'sftp' | 'internal' | 'webhook'
+export type ConnectorDirection = 'inbound' | 'outbound'
+
+export interface Connector {
+  connector_id: string
+  name: string
+  description: string
+  kind: ConnectorKind
+  direction: ConnectorDirection
+  is_active: boolean
+  config: Record<string, any>
+  secret_keys: Record<string, any>   // masked map: each key → {set: true}
+  input_schema: Record<string, any> | null
+  mock_enabled: boolean
+  mock_response: Record<string, any> | null
+  created_at: string
+  updated_at: string
+  created_by_user_id: string | null
+}
+
+export interface ConnectorCreate {
+  name: string
+  description?: string
+  kind: ConnectorKind
+  direction?: ConnectorDirection
+  is_active?: boolean
+  config?: Record<string, any>
+  secret?: Record<string, any>
+  input_schema?: Record<string, any> | null
+  mock_enabled?: boolean
+  mock_response?: Record<string, any> | null
+}
+
+export interface ConnectorUpdate {
+  name?: string
+  description?: string
+  direction?: ConnectorDirection
+  is_active?: boolean
+  config?: Record<string, any>
+  secret?: Record<string, any | null>  // null value removes the key
+  input_schema?: Record<string, any> | null
+  mock_enabled?: boolean
+  mock_response?: Record<string, any> | null
+}
+
+export interface ConnectorRunResult {
+  ok: boolean
+  data: any | null
+  error: string | null
+  duration_ms: number
+  metadata: Record<string, any> | null
+}
+
+export interface ConnectorRunRow {
+  run_id: string
+  connector_id: string
+  triggered_at: string
+  triggered_by_user_id: string | null
+  correlation_id: string | null
+  duration_ms: number | null
+  ok: boolean
+  error_message: string | null
+  input_preview: string | null
+  output_preview: string | null
+  metadata: Record<string, any>
+}

@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ShieldCheck, Users, KeyRound, Boxes } from 'lucide-react'
+import { ShieldCheck, Users, KeyRound, Boxes, Plug } from 'lucide-react'
 import { api } from './api'
 import UsersPage from './pages/UsersPage'
 import RolesPage from './pages/RolesPage'
 import AppsPage from './pages/AppsPage'
+import ConnectorsPage from './pages/ConnectorsPage'
 import ActorPicker from './components/ActorPicker'
 
-type Tab = 'users' | 'roles' | 'apps'
+type Tab = 'users' | 'roles' | 'apps' | 'connectors'
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('users')
@@ -37,6 +38,7 @@ export default function App() {
               ['users', 'Users', Users],
               ['roles', 'Roles', KeyRound],
               ['apps', 'Apps', Boxes],
+              ['connectors', 'Connectors', Plug],
             ] as Array<[Tab, string, typeof Users]>).map(([key, label, Icon]) => (
               <button
                 key={key}
@@ -57,9 +59,10 @@ export default function App() {
 
       {/* Body */}
       <main className="max-w-7xl mx-auto px-6 py-6">
-        {tab === 'users' && <UsersPage />}
-        {tab === 'roles' && <RolesPage />}
-        {tab === 'apps'  && <AppsPage />}
+        {tab === 'users'      && <UsersPage />}
+        {tab === 'roles'      && <RolesPage />}
+        {tab === 'apps'       && <AppsPage />}
+        {tab === 'connectors' && <ConnectorsPage />}
       </main>
     </div>
   )

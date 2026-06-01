@@ -120,3 +120,34 @@ export interface ConnectorRunRow {
   output_preview: string | null
   metadata: Record<string, any>
 }
+
+// ── members (shared reference data; admin-managed) ──────────────────────────
+
+export interface Member {
+  member_id: string
+  member_number: string
+  first_name: string
+  last_name: string
+  date_of_birth: string                    // YYYY-MM-DD
+  lob: string                              // MA | Commercial | Medicaid | …
+  coverage_effective_date: string
+  coverage_termination_date: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface MemberCreate {
+  member_number: string
+  first_name: string
+  last_name: string
+  date_of_birth: string
+  lob: string
+  coverage_effective_date: string
+  coverage_termination_date?: string | null
+}
+
+export interface MemberListResponse {
+  total: number
+  items: Member[]
+}
+

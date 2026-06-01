@@ -6,6 +6,9 @@ import type {
   ConnectorRunResult,
   ConnectorRunRow,
   ConnectorUpdate,
+  Member,
+  MemberCreate,
+  MemberListResponse,
   Role,
   User,
   UserCreate,
@@ -170,5 +173,32 @@ export const api = {
       { params: { limit } },
     )
     return data
+  },
+
+  // ── members (shared reference data) ───────────────────────────────────
+  async listMembers(opts: { page?: number; pageSize?: number; search?: string; lob?: string } = {}): Promise<MemberListResponse> {
+    const { data } = await client.get<MemberListResponse>('/api/members', {
+      params: {
+        page: opts.page ?? 1,
+        page_size: opts.pageSize ?? 25,
+        search: opts.search || undefined,
+        lob: opts.lob || undefined,
+      },
+    })
+    return data
+  },
+
+  async createMember(body: MemberCreate): Promise<Member> {
+    const { data } = await client.post<Member>('/api/members', body)
+    return data
+  },
+
+  async updateMember(id: string, body: MemberCreate): Promise<Member> {
+    const { data } = await client.put<Member>(`/api/members/${id}`, body)
+    return data
+  },
+
+  async deleteMember(id: string): Promise<void> {
+    await client.delete(`/api/members/${id}`)
   },
 }

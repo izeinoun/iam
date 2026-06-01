@@ -27,5 +27,22 @@ client.interceptors.request.use((config) => {
       config.params = { ...(config.params ?? {}), actor_user_id: actor }
     }
   }
+  // Demo gate: attach the login token when present (no-op when gate disabled).
+  const token = localStorage.getItem('opa_demo_token')
+  if (token) config.headers['Authorization'] = `Bearer ${token}`
   return config
 })
+
+// Gate rejected us (expired/missing token) — drop it and return to login.
+// Skip /auth/* so a wrong-password 401 can surface its message.
+client.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const url: string = err.config?.url ?? ''
+    if (err.response?.status === 401 && !url.includes('/auth/')) {
+      localStorage.removeItem('opa_demo_token')
+      window.location.reload()
+    }
+    return Promise.reject(err)
+  },
+)

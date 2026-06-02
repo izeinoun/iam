@@ -1,15 +1,8 @@
 import axios from 'axios'
+import { API_BASE_URL } from '../config/appUrls'
 
-const RAW = (import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/+$/, '')
-
-function normalize(v: string): string {
-  if (!v) return 'http://localhost:8001'
-  if (/^https?:\/\//i.test(v)) return v
-  if (v.startsWith('localhost') || v.startsWith('127.')) return `http://${v}`
-  return `https://${v}`
-}
-
-export const API_BASE_URL = normalize(RAW)
+// API base now lives in config/appUrls (committed, switches by build mode).
+export { API_BASE_URL }
 
 export const client = axios.create({
   baseURL: API_BASE_URL,

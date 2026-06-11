@@ -26,15 +26,35 @@ client.interceptors.request.use((config) => {
   return config
 })
 
-// Gate rejected us (expired/missing token) — drop it and return to login.
-// Skip /auth/* so a wrong-password 401 can surface its message.
+// Reentrancy guard so a persistent 401 can never become an infinite reload
+// storm: reload at most once per page load, cleared on the first success.
+const RELOAD_GUARD_KEY = 'iam.authReloading'
+
+// On 401 (skip /auth/* so a wrong-password message can surface) figure out
+// WHICH credential the backend rejected and drop only that one, then reload:
+//   - "Unknown user_id" → the acting user was wiped (e.g. backend re-seed).
+//     Drop iam.actorUserId so ActorPicker re-selects a valid user. Reloading
+//     WITHOUT clearing it would just 401 again forever.
+//   - otherwise (gate token expired/invalid) → drop the demo token and return
+//     to the login screen.
 client.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    sessionStorage.removeItem(RELOAD_GUARD_KEY)
+    return res
+  },
   (err) => {
     const url: string = err.config?.url ?? ''
     if (err.response?.status === 401 && !url.includes('/auth/')) {
-      localStorage.removeItem('opa_demo_token')
-      window.location.reload()
+      const detail = err.response?.data?.detail
+      if (typeof detail === 'string' && detail.startsWith('Unknown user_id')) {
+        localStorage.removeItem('iam.actorUserId')
+      } else {
+        localStorage.removeItem('opa_demo_token')
+      }
+      if (!sessionStorage.getItem(RELOAD_GUARD_KEY)) {
+        sessionStorage.setItem(RELOAD_GUARD_KEY, '1')
+        window.location.reload()
+      }
     }
     return Promise.reject(err)
   },

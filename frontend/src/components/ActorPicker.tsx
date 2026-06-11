@@ -48,16 +48,21 @@ export default function ActorPicker({ users }: Props) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
-  // Auto-select an admin user the first time we see one.
+  // Pick a default actor when we have no valid one. This fires both on first
+  // load (no stored id) AND when the stored id is stale — e.g. it points at a
+  // user that was wiped by a backend re-seed. Without the stale-id branch the
+  // picker would render "Loading…" forever and keep sending a dead X-User-Id,
+  // which 401s every RBAC-gated route ("Unknown user_id").
   useEffect(() => {
-    if (!actorId && users.length > 0) {
-      const admin = users.find((u) => u.roles.includes('admin'))
-        ?? users.find((u) => u.role === 'admin')
-        ?? users[0]
-      if (admin) {
-        setActorId(admin.id)
-        localStorage.setItem(KEY, admin.id)
-      }
+    if (users.length === 0) return
+    const stillValid = actorId && users.some((u) => u.id === actorId)
+    if (stillValid) return
+    const admin = users.find((u) => u.roles.includes('admin'))
+      ?? users.find((u) => u.role === 'admin')
+      ?? users[0]
+    if (admin) {
+      setActorId(admin.id)
+      localStorage.setItem(KEY, admin.id)
     }
   }, [actorId, users])
 

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ShieldCheck, Users, KeyRound, Boxes, Plug, UserSquare } from 'lucide-react'
 import { api } from './api'
+import EnvironmentBanner from './components/EnvironmentBanner'
 import UsersPage from './pages/UsersPage'
 import RolesPage from './pages/RolesPage'
 import AppsPage from './pages/AppsPage'
@@ -37,7 +38,9 @@ export default function App() {
   const usersQ = useQuery({ queryKey: ['users-all'], queryFn: () => api.listUsers(true) })
 
   return (
-    <div className="min-h-screen flex bg-slate-50 text-slate-900">
+    <>
+      <EnvironmentBanner />
+      <div className="min-h-screen flex bg-slate-50 text-slate-900">
       {/* Left sidebar — matches the ClaimGuard / SIU pattern so all admin
           surfaces read the same way across the platform. */}
       <aside className="w-[230px] shrink-0 bg-white border-r border-slate-200 flex flex-col">
@@ -119,5 +122,6 @@ export default function App() {
         </main>
       </div>
     </div>
+    </>
   )
 }

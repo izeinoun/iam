@@ -7,6 +7,7 @@ export { API_BASE_URL }
 export const client = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true, // Include httpOnly cookies for cross-app session sharing
 })
 
 // Attach acting user_id so the backend's RBAC deps know who's calling
